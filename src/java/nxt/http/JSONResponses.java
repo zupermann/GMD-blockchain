@@ -160,6 +160,7 @@ public final class JSONResponses {
     public static final JSONStreamAware INCORRECT_PAGE = incorrect("page", "page must be integer. page 0 is first page");
     public static final JSONStreamAware INCORRECT_TYPE = incorrect("type", "Must be positive integer");
     public static final JSONStreamAware INCORRECT_SUBTYPE = incorrect("subType", "Must be positive integer");
+    public static final JSONStreamAware INCORRECT_MOVE_PRUNABLE = incorrect("messageIsPrunable", "Message cannot be prunable");
 
     public static final JSONStreamAware NOT_ENOUGH_FUNDS;
     static {

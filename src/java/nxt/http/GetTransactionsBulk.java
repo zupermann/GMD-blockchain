@@ -1,6 +1,8 @@
 package nxt.http;
 
+import nxt.Blockchain;
 import nxt.Db;
+import nxt.Nxt;
 import nxt.crypto.Crypto;
 import nxt.db.TransactionalDb;
 import org.json.simple.JSONArray;
@@ -133,26 +135,33 @@ public class GetTransactionsBulk extends APIServlet.APIRequestHandler {
 
     private JSONArray executePreparedStatement(PreparedStatement pstmt) throws SQLException{
         JSONArray outputArray = new JSONArray();
+        int currentHeight = Nxt.getBlockchain().getHeight();
         try (ResultSet rs = pstmt.executeQuery();) {
             while (rs.next()) {
                 JSONObject o = new JSONObject();
-                o.put("ID", rs.getLong("ID"));
+                o.put("ID", rs.getString("ID"));
+                o.put("IDUnsignedL", Long.toUnsignedString(rs.getLong("ID")));
                 Long recId = rs.getLong("RECIPIENT_ID");
                 if (recId != 0) {
                     o.put("RECIPIENT_ID", "GMD-" + Crypto.rsEncode(recId));
                 }
                 o.put("TRANSACTION_INDEX", rs.getInt("TRANSACTION_INDEX"));
-                o.put("AMOUNT", rs.getLong("AMOUNT"));
-                o.put("FEE", rs.getLong("FEE"));
+                o.put("AMOUNT", rs.getString("AMOUNT"));
+                o.put("FEE", rs.getString("FEE"));
                 o.put("FULL_HASH", rs.getString("FULL_HASH"));
-                o.put("HEIGHT", rs.getLong("HEIGHT"));
-                o.put("BLOCK_ID", rs.getLong("BLOCK_ID"));
+                int height  = rs.getInt("HEIGHT");
+                o.put("HEIGHT", height);
+                o.put("confirmations", currentHeight - height);
+
+                o.put("BLOCK_ID", rs.getString("BLOCK_ID"));
+                o.put("blockIdUnsignedL", Long.toUnsignedString(rs.getLong("BLOCK_ID"))); // added this for convenience as getBlock expects unsigned long
                 o.put("SIGNATURE", rs.getString("SIGNATURE"));
-                o.put("TIMESTAMP", rs.getLong("TIMESTAMP"));
+                o.put("TIMESTAMP", rs.getInt("TIMESTAMP"));
                 o.put("SENDER_ID", "GMD-" + Crypto.rsEncode(rs.getLong("SENDER_ID")));
-                o.put("BLOCK_TIMESTAMP", rs.getLong("BLOCK_TIMESTAMP"));
+                o.put("BLOCK_TIMESTAMP", rs.getInt("BLOCK_TIMESTAMP"));
                 o.put("PHASED", rs.getBoolean("PHASED"));
                 o.put("ATTACHMENT_BYTES", rs.getString("ATTACHMENT_BYTES"));
+
                 JSONObject type_json = new JSONObject();
                 int t = rs.getInt("TYPE");
                 int st = rs.getInt("SUBTYPE");
