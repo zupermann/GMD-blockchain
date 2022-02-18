@@ -194,7 +194,19 @@ var NRS = (function (NRS, $, undefined) {
                 });
             } else {
                 //ok, accountId matches..continue with the real request.
-                NRS.processAjaxRequest(requestType, data, callback, options);
+                const pass = data.secretPhrase;
+                delete data.secretPhrase;
+                data.publicKey = NRS.accountInfo.publicKey;
+                NRS.processAjaxRequest(requestType, data,
+                (res, dt) => {
+                    var signature = NRS.signBytes(res.unsignedTransactionBytes,converters.stringToHexString(pass));
+                    if (signature && signature.length == 128 && res.unsignedTransactionBytes.length > 192 + 128) {
+                        var signedBytes = res.unsignedTransactionBytes.substring(0, 192) + signature + res.unsignedTransactionBytes.substring(192 + 128);
+                        dataBroadcast = {};
+                        dataBroadcast.transactionBytes = signedBytes;
+                        NRS.sendRequest("broadcastTransaction", dataBroadcast, callback, options);
+                    }
+                }, options );
             }
         } else {
             NRS.processAjaxRequest(requestType, data, callback, options);
@@ -435,7 +447,7 @@ var NRS = (function (NRS, $, undefined) {
                     }
                     callback(response, data);
                 } else {
-                    if (response.broadcasted == false && !data.calculateFee && !NRS.isScheduleRequest(requestType)) {
+                    if (data.doNotSign || data.broadcast== "false" ) {
                         async.waterfall([
                             function (callback) {
                                 addMissingData(data);
