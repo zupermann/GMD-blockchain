@@ -447,7 +447,7 @@ var NRS = (function (NRS, $, undefined) {
                     }
                     callback(response, data);
                 } else {
-                    if (data.doNotSign || data.broadcast== "false" ) {
+                    if ((data.doNotSign || data.broadcast== "false") && !data.calculateFee && !NRS.isScheduleRequest(requestType) ) {
                         async.waterfall([
                             function (callback) {
                                 addMissingData(data);

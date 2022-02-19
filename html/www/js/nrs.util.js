@@ -434,6 +434,9 @@ var NRS = (function (NRS, $, undefined) {
     NRS.getNumberOfDecimals = function(rows, key, callback) {
         var locale = NRS.getLocale();
         var decimals = 0;
+        if(!rows){
+            return decimals;
+        }
         for (var i=0; i<rows.length; i++) {
             var val = rows[i][key];
             if (callback) {
